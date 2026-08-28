@@ -44,10 +44,14 @@ def index():
     body{font-family:Arial;margin:0;background:#f4f5f8;color:#182033}
     header{background:linear-gradient(110deg,#6338b7,#3e69c7,#25aeb3);color:white;padding:25px}
     main{max-width:1100px;margin:auto;padding:25px}
-    .btn{padding:12px 16px;border:0;border-radius:7px;background:#6338b7;color:white;font-weight:bold}
+    .btn{padding:12px 16px;border:0;border-radius:7px;background:#6338b7;color:white;font-weight:bold;cursor:pointer}
+    .btn-pub{background:#2E8C86}
+    .btn-desc{background:#999}
     article{background:white;padding:18px;margin:12px 0;border-radius:10px}
     .src{color:#6338b7;font-size:12px;font-weight:bold}
     .title{font-size:18px;font-weight:bold;margin:7px 0}
+    .acciones{margin-top:10px;display:flex;gap:8px}
+    .acciones form{display:inline}
     </style></head><body>
     <header><b>📱 NAVARRA TE VE</b><br>Motor editorial</header>
     <main>
@@ -61,6 +65,10 @@ def index():
         html += '<div class="title">%s</div>' % x["title"]
         html += '<small>%s · %s · prioridad %s · <a href="%s">fuente</a></small>' % (
             x["published_at"], x["category"], x["priority"], x["url"])
+        html += '''<div class="acciones">
+            <form method="post" action="/publish/%d"><button class="btn btn-pub">✅ Publicar</button></form>
+            <form method="post" action="/discard/%d"><button class="btn btn-desc">🗑️ Descartar</button></form>
+        </div>''' % (x["id"], x["id"])
         html += '</article>'
 
     html += "</main></body></html>"
@@ -88,6 +96,22 @@ def collect():
              datetime.now().isoformat(timespec="minutes")))
         except sqlite3.IntegrityError:
             pass
+    c.commit()
+    c.close()
+    return redirect(url_for("index"))
+
+@app.post("/publish/<int:item_id>")
+def publish(item_id):
+    c = db()
+    c.execute("UPDATE items SET status='published' WHERE id=?", (item_id,))
+    c.commit()
+    c.close()
+    return redirect(url_for("index"))
+
+@app.post("/discard/<int:item_id>")
+def discard(item_id):
+    c = db()
+    c.execute("UPDATE items SET status='discarded' WHERE id=?", (item_id,))
     c.commit()
     c.close()
     return redirect(url_for("index"))
