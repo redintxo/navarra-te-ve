@@ -1,6 +1,6 @@
 
 
-rom flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, url_for, request
 import sqlite3, hashlib, feedparser, os
 from datetime import datetime
 from werkzeug.utils import secure_filename
